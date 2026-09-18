@@ -1,25 +1,29 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { markPuzzleSolved } from '@/lib/progress';
 
 const RUNES = [
-  { id: 1, symbol: '🜁', name: 'Воздух' },
-  { id: 2, symbol: '🜂', name: 'Огонь' },
-  { id: 3, symbol: '🜃', name: 'Земля' },
-  { id: 4, symbol: '🜄', name: 'Вода' },
+  { id: 3, symbol: '⊕', name: 'Земля', element: 'earth' },
+  { id: 1, symbol: '△', name: 'Воздух', element: 'air' },
+  { id: 4, symbol: '≋', name: 'Вода', element: 'water' },
+  { id: 2, symbol: '⋮⋮', name: 'Огонь', element: 'fire' },
 ];
 
-const CORRECT_SEQUENCE = [3, 1, 4, 2]; // Earth, Air, Water, Fire
+const CORRECT_SEQUENCE = [3, 1, 4, 2];
 
 export default function SecretDoorPuzzle() {
   const [sequence, setSequence] = useState<number[]>([]);
   const [solved, setSolved] = useState(false);
   const [failed, setFailed] = useState(false);
   const [doorOpening, setDoorOpening] = useState(false);
+  const [pressedRune, setPressedRune] = useState<number | null>(null);
 
   const handleRuneClick = (id: number) => {
     if (solved || doorOpening || sequence.length >= 4) return;
+
+    setPressedRune(id);
+    setTimeout(() => setPressedRune(null), 300);
 
     const newSequence = [...sequence, id];
     setSequence(newSequence);
@@ -37,13 +41,13 @@ export default function SecretDoorPuzzle() {
         setSolved(true);
         setDoorOpening(false);
         markPuzzleSolved('secret-door');
-      }, 2000);
+      }, 3000);
     } else {
       setFailed(true);
       setTimeout(() => {
         setSequence([]);
         setFailed(false);
-      }, 1500);
+      }, 2000);
     }
   };
 
@@ -54,173 +58,246 @@ export default function SecretDoorPuzzle() {
     setDoorOpening(false);
   };
 
-  const isRunePressed = (id: number) => sequence.includes(id);
-  const getRunePressOrder = (id: number) => {
+  const isRuneInSequence = (id: number) => sequence.includes(id);
+  const getRuneOrder = (id: number) => {
     const index = sequence.indexOf(id);
     return index >= 0 ? index + 1 : null;
   };
 
   return (
-    <div className="space-y-6">
-      {/* Story/Atmosphere */}
-      <div className="bg-gradient-to-br from-stone-800 to-stone-900 p-6 rounded-lg border-2 border-stone-700 text-stone-100 shadow-2xl">
-        <div className="flex items-start gap-3 mb-3">
-          <span className="text-3xl">🏰</span>
-          <div>
-            <h3 className="font-bold text-lg text-amber-400 mb-2">Тайный проход</h3>
-            <p className="text-sm leading-relaxed">
-              Глубоко в пещере вы обнаруживаете каменную стену, но что-то в ней не так...
-              При ближайшем рассмотрении вы замечаете едва заметные трещины, образующие
-              контур двери. На камне высечены четыре древних руны стихий.
-            </p>
-          </div>
-        </div>
-        <div className="bg-stone-950/50 p-3 rounded border border-amber-700/30 mt-3">
-          <p className="text-xs text-amber-200/80 italic">
-            💡 Подсказка: "Из земли родился, воздухом вознесся, водой очистился, огнём закалился"
-          </p>
-        </div>
+    <div className="relative -mx-8 -my-6 min-h-[600px] md:min-h-[700px]">
+      {/* Full-bleed cave background */}
+      <div 
+        className="absolute inset-0 bg-cover bg-center"
+        style={{
+          backgroundImage: `url("data:image/svg+xml,%3Csvg width='1200' height='800' xmlns='http://www.w3.org/2000/svg'%3E%3Cdefs%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' /%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3C/defs%3E%3Crect width='1200' height='800' fill='%23181410'/%3E%3Crect width='1200' height='800' filter='url(%23noise)' opacity='0.15'/%3E%3C/svg%3E")`,
+          backgroundColor: '#0a0806',
+        }}
+      >
+        {/* Vignette overlay */}
+        <div className="absolute inset-0 bg-gradient-radial from-transparent via-black/40 to-black/80" />
+        
+        {/* Texture overlay for cave wall feeling */}
+        <div className="absolute inset-0 opacity-30 mix-blend-overlay" 
+          style={{
+            backgroundImage: `repeating-linear-gradient(0deg, transparent, transparent 2px, rgba(0,0,0,.1) 2px, rgba(0,0,0,.1) 4px),
+                             repeating-linear-gradient(90deg, transparent, transparent 2px, rgba(0,0,0,.1) 2px, rgba(0,0,0,.1) 4px)`
+          }}
+        />
       </div>
 
-      {/* The Secret Door */}
-      <div className="relative">
-        <div
-          className={`bg-gradient-to-br from-stone-700 via-stone-800 to-stone-900 rounded-xl p-8 border-4 transition-all duration-2000 ${
-            doorOpening
-              ? 'border-amber-500 shadow-2xl shadow-amber-500/50 scale-105'
-              : failed
-              ? 'border-red-600 shadow-lg shadow-red-600/50'
-              : 'border-stone-600 shadow-xl'
-          }`}
-        >
+      {/* Torch light effect */}
+      <div className="absolute top-0 left-8 w-32 h-32 bg-orange-600/20 rounded-full blur-3xl" />
+      
+      {/* Main content */}
+      <div className="relative z-10 p-8 flex flex-col min-h-[600px] md:min-h-[700px]">
+        
+        {/* Title - minimal chrome */}
+        <div className="mb-6">
+          <h2 className="text-amber-200/90 text-xl md:text-2xl font-serif tracking-wide" 
+            style={{ textShadow: '2px 2px 8px rgba(0,0,0,0.8)' }}>
+            {solved ? 'Проход открыт' : doorOpening ? 'Древняя магия пробуждается...' : 'Тайна Горы'}
+          </h2>
+        </div>
+
+        {/* Central door area */}
+        <div className="flex-1 flex flex-col items-center justify-center space-y-8">
+          
           {/* Door crack effect when opening */}
           {doorOpening && (
-            <div className="absolute inset-0 flex items-center justify-center">
-              <div className="w-1 h-full bg-gradient-to-b from-transparent via-amber-400 to-transparent animate-pulse" />
+            <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+              <div className="w-1 h-full bg-gradient-to-b from-transparent via-amber-500/60 to-transparent animate-pulse"
+                style={{ boxShadow: '0 0 20px 10px rgba(251, 191, 36, 0.3)' }} />
             </div>
           )}
 
-          {/* Title */}
-          <div className="text-center mb-6">
-            <h3 className="text-2xl font-bold text-stone-200 mb-2">
-              {solved ? '✨ Дверь открыта! ✨' : 'Руны Стихий'}
-            </h3>
-            <p className="text-stone-400 text-sm">
-              {solved
-                ? 'Проход свободен'
-                : sequence.length === 0
-                ? 'Нажмите руны в правильной последовательности'
-                : `Нажато: ${sequence.length} / 4`}
-            </p>
-          </div>
-
-          {/* Runes Grid */}
-          <div className="grid grid-cols-2 gap-4 mb-6">
+          {/* Stone runes carved into wall */}
+          <div className="flex flex-wrap justify-center gap-4 md:gap-6 max-w-2xl">
             {RUNES.map((rune) => {
-              const pressOrder = getRunePressOrder(rune.id);
-              const isPressed = isRunePressed(rune.id);
+              const order = getRuneOrder(rune.id);
+              const isPressed = isRuneInSequence(rune.id);
+              const isJustPressed = pressedRune === rune.id;
 
               return (
                 <button
                   key={rune.id}
                   onClick={() => handleRuneClick(rune.id)}
                   disabled={solved || doorOpening || isPressed}
-                  className={`relative aspect-square rounded-xl font-bold text-6xl transition-all duration-300 ${
-                    solved
-                      ? 'bg-amber-600 text-amber-100 shadow-lg shadow-amber-600/50'
-                      : isPressed
-                      ? 'bg-amber-700 text-amber-100 shadow-lg shadow-amber-700/50 cursor-not-allowed'
-                      : failed
-                      ? 'bg-red-800 text-red-200 shadow-lg shadow-red-800/50'
-                      : 'bg-stone-600 text-stone-300 hover:bg-stone-500 hover:scale-105 hover:shadow-xl cursor-pointer active:scale-95'
-                  } flex items-center justify-center border-2 ${
-                    isPressed ? 'border-amber-400' : 'border-stone-500'
-                  }`}
-                  title={rune.name}
+                  className="relative group"
+                  style={{ width: '100px', height: '100px' }}
                 >
-                  {rune.symbol}
-                  {pressOrder !== null && (
-                    <span className="absolute top-2 right-2 bg-amber-900 text-amber-100 text-sm font-bold w-7 h-7 rounded-full flex items-center justify-center border-2 border-amber-400">
-                      {pressOrder}
-                    </span>
+                  {/* Stone circle background */}
+                  <div 
+                    className={`absolute inset-0 rounded-full transition-all duration-500 ${
+                      solved 
+                        ? 'bg-amber-900/40 shadow-[inset_0_0_20px_rgba(251,191,36,0.4)]'
+                        : isPressed
+                        ? 'bg-amber-950/60 shadow-[inset_0_0_15px_rgba(251,191,36,0.2)]'
+                        : failed
+                        ? 'bg-red-950/40 shadow-[inset_0_0_15px_rgba(127,29,29,0.3)]'
+                        : 'bg-stone-950/40 shadow-[inset_0_2px_8px_rgba(0,0,0,0.6)]'
+                    } backdrop-blur-sm border border-stone-800/50`}
+                    style={{
+                      backgroundImage: 'radial-gradient(circle at 30% 30%, rgba(255,255,255,0.05), transparent)',
+                    }}
+                  >
+                    {/* Dust/ember effect on press */}
+                    {isJustPressed && (
+                      <div className="absolute inset-0 rounded-full bg-amber-600/30 animate-ping" />
+                    )}
+                  </div>
+
+                  {/* Carved rune symbol */}
+                  <div 
+                    className={`relative z-10 w-full h-full flex items-center justify-center text-4xl md:text-5xl transition-all duration-300 ${
+                      solved
+                        ? 'text-amber-500/90'
+                        : isPressed
+                        ? 'text-amber-700/80'
+                        : failed
+                        ? 'text-red-900/60'
+                        : 'text-stone-600 group-hover:text-stone-500'
+                    }`}
+                    style={{ 
+                      textShadow: isPressed || solved 
+                        ? '0 0 10px rgba(251, 191, 36, 0.3), 0 2px 4px rgba(0,0,0,0.8)' 
+                        : '0 2px 4px rgba(0,0,0,0.8), inset 0 1px 0 rgba(255,255,255,0.1)',
+                      fontFamily: 'Georgia, serif',
+                    }}
+                  >
+                    {rune.symbol}
+                  </div>
+
+                  {/* Order indicator - carved notch */}
+                  {order !== null && (
+                    <div className="absolute -top-2 -right-2 w-7 h-7 rounded-full bg-stone-900/80 border border-amber-800/60 flex items-center justify-center backdrop-blur-sm">
+                      <span className="text-amber-600/90 text-xs font-bold" style={{ textShadow: '0 1px 2px rgba(0,0,0,0.8)' }}>
+                        {order}
+                      </span>
+                    </div>
+                  )}
+
+                  {/* Hover glow for active runes */}
+                  {!solved && !isPressed && !doorOpening && (
+                    <div className="absolute inset-0 rounded-full opacity-0 group-hover:opacity-100 transition-opacity duration-300 bg-amber-950/20 shadow-[inset_0_0_15px_rgba(251,191,36,0.15)]" />
                   )}
                 </button>
               );
             })}
           </div>
 
-          {/* Sequence Display */}
-          <div className="flex justify-center gap-3 mb-4">
-            {[0, 1, 2, 3].map((index) => (
-              <div
-                key={index}
-                className={`w-12 h-12 rounded-lg border-2 flex items-center justify-center text-2xl transition-all ${
-                  sequence[index]
-                    ? failed
-                      ? 'bg-red-900/50 border-red-600 text-red-200'
-                      : 'bg-amber-900/50 border-amber-600 text-amber-200'
-                    : 'bg-stone-700/50 border-stone-500'
-                }`}
-              >
-                {sequence[index] && RUNES.find((r) => r.id === sequence[index])?.symbol}
-              </div>
-            ))}
+          {/* Sequence progress - stone notches */}
+          <div className="flex gap-3 p-4 rounded-lg bg-black/40 backdrop-blur-sm border border-stone-800/30">
+            {[0, 1, 2, 3].map((index) => {
+              const runeId = sequence[index];
+              const rune = runeId ? RUNES.find((r) => r.id === runeId) : null;
+              
+              return (
+                <div
+                  key={index}
+                  className={`w-10 h-10 rounded border flex items-center justify-center text-lg transition-all duration-300 ${
+                    rune
+                      ? failed
+                        ? 'bg-red-950/50 border-red-900/60 text-red-800/80 shadow-[inset_0_0_10px_rgba(127,29,29,0.3)]'
+                        : 'bg-amber-950/50 border-amber-900/60 text-amber-700/90 shadow-[inset_0_0_10px_rgba(251,191,36,0.2)]'
+                      : 'bg-stone-950/30 border-stone-800/40 shadow-[inset_0_2px_4px_rgba(0,0,0,0.5)]'
+                  }`}
+                >
+                  {rune?.symbol}
+                </div>
+              );
+            })}
           </div>
 
-          {/* Reset Button */}
+          {/* Reset button - subtle */}
           {!solved && sequence.length > 0 && !doorOpening && (
-            <div className="text-center">
-              <button
-                onClick={() => setSequence([])}
-                className="text-sm text-stone-400 hover:text-stone-200 underline"
-              >
-                Сбросить последовательность
-              </button>
-            </div>
+            <button
+              onClick={() => setSequence([])}
+              className="text-xs text-stone-500 hover:text-stone-400 transition-colors px-3 py-1 rounded border border-stone-800/30 bg-black/20 backdrop-blur-sm"
+            >
+              сбросить
+            </button>
           )}
         </div>
-      </div>
 
-      {/* Failure Message */}
-      {failed && (
-        <div className="bg-red-900/20 border-2 border-red-700 p-4 rounded-lg text-center animate-pulse">
-          <p className="text-red-200 font-semibold">
-            ⚠️ Неверная последовательность! Дверь остаётся запертой.
-          </p>
-        </div>
-      )}
+        {/* Parchment riddle - diegetic */}
+        {!solved && (
+          <div className="mt-auto">
+            <div 
+              className="relative mx-auto max-w-md p-6 bg-amber-50/95 rounded-sm shadow-2xl"
+              style={{
+                backgroundImage: `url("data:image/svg+xml,%3Csvg width='400' height='300' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='paper'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.04' numOctaves='5' result='noise'/%3E%3CfeDiffuseLighting in='noise' lighting-color='%23f5f5dc' surfaceScale='1'%3E%3CfeDistantLight azimuth='45' elevation='60'/%3E%3C/feDiffuseLighting%3E%3C/filter%3E%3Crect width='400' height='300' fill='%23e8dcc4' filter='url(%23paper)'/%3E%3C/svg%3E")`,
+                backgroundSize: 'cover',
+                border: '1px solid rgba(120, 80, 40, 0.3)',
+                transform: 'rotate(-0.5deg)',
+              }}
+            >
+              {/* Torn edge effect */}
+              <div className="absolute -top-1 left-0 right-0 h-2 bg-gradient-to-b from-amber-900/10 to-transparent" />
+              <div className="absolute -bottom-1 left-0 right-0 h-2 bg-gradient-to-t from-amber-900/10 to-transparent" />
+              
+              {/* Stains */}
+              <div className="absolute top-2 right-4 w-8 h-8 bg-amber-900/5 rounded-full blur-sm" />
+              <div className="absolute bottom-4 left-6 w-6 h-6 bg-stone-900/5 rounded-full blur-sm" />
 
-      {/* Success Message */}
-      {solved && (
-        <div className="bg-gradient-to-br from-amber-900/30 to-green-900/30 border-2 border-amber-600 p-8 rounded-xl text-center space-y-4 shadow-2xl">
-          <div className="text-6xl mb-4">🚪✨</div>
-          <h3 className="text-3xl font-bold text-amber-300">Дверь открылась!</h3>
-          <p className="text-stone-200 text-lg">
-            Камень медленно отъезжает в сторону, открывая тёмный проход вглубь пещеры.
-            Древняя магия рун исчезает, оставляя слабое золотистое свечение.
-          </p>
-          <div className="bg-green-900/30 border border-green-700 p-3 rounded-lg inline-block">
-            <p className="text-green-200 text-sm">
-              🎖️ Загадка решена! Вы можете продолжить своё путешествие.
+              <div className="relative">
+                <p 
+                  className="text-stone-800 text-sm leading-relaxed italic text-center font-serif"
+                  style={{ textShadow: '0 1px 1px rgba(255,255,255,0.5)' }}
+                >
+                  Из земли родился,<br />
+                  воздухом вознесся,<br />
+                  водой очистился,<br />
+                  огнём закалился.
+                </p>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Failure message - subtle */}
+        {failed && (
+          <div className="mt-4 mx-auto max-w-md text-center">
+            <p className="text-red-400/80 text-sm backdrop-blur-sm bg-black/30 px-4 py-2 rounded border border-red-900/30">
+              Камень не поддаётся...
             </p>
           </div>
-          <button
-            onClick={handleReset}
-            className="mt-4 bg-amber-700 hover:bg-amber-600 text-white px-6 py-3 rounded-lg font-semibold transition-colors shadow-lg"
-          >
-            Попробовать снова
-          </button>
-        </div>
-      )}
+        )}
 
-      {/* Door Opening Animation State */}
-      {doorOpening && (
-        <div className="bg-amber-900/20 border-2 border-amber-600 p-4 rounded-lg text-center">
-          <p className="text-amber-200 font-semibold animate-pulse">
-            ✨ Руны светятся... Дверь открывается...
-          </p>
-        </div>
-      )}
+        {/* Success state */}
+        {solved && (
+          <div className="absolute inset-0 flex items-center justify-center bg-black/60 backdrop-blur-sm z-20">
+            <div className="max-w-lg p-8 bg-gradient-to-br from-amber-950/90 to-stone-950/90 rounded-lg border border-amber-800/40 shadow-2xl text-center space-y-4">
+              <div className="text-5xl mb-4 animate-pulse">✦</div>
+              <h3 className="text-2xl md:text-3xl font-serif text-amber-400">
+                Дверь отворилась
+              </h3>
+              <p className="text-stone-300 text-sm leading-relaxed">
+                Древний камень медленно уходит в стену, открывая тёмный проход.
+                Тёплый воздух вырывается из глубины, неся запах земли и забытых веков.
+              </p>
+              <div className="pt-4">
+                <button
+                  onClick={handleReset}
+                  className="bg-amber-900/60 hover:bg-amber-800/60 text-amber-200 px-6 py-2 rounded border border-amber-700/50 transition-colors text-sm font-medium backdrop-blur-sm"
+                >
+                  Закрыть проход
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Opening state overlay */}
+        {doorOpening && (
+          <div className="absolute inset-0 flex items-center justify-center pointer-events-none z-20">
+            <p className="text-amber-400/90 text-lg md:text-xl font-serif animate-pulse backdrop-blur-sm bg-black/40 px-6 py-3 rounded border border-amber-900/30">
+              Руны светятся...
+            </p>
+          </div>
+        )}
+
+      </div>
     </div>
   );
 }
