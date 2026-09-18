@@ -4,10 +4,10 @@ import { useState } from 'react';
 import { markPuzzleSolved } from '@/lib/progress';
 
 const RUNES = [
-  { id: 3, symbol: '⊕', name: 'Земля', element: 'earth' },
-  { id: 1, symbol: '△', name: 'Воздух', element: 'air' },
-  { id: 4, symbol: '≋', name: 'Вода', element: 'water' },
-  { id: 2, symbol: '⋮⋮', name: 'Огонь', element: 'fire' },
+  { id: 3, symbol: '⊕', name: 'Земля', element: 'earth', position: 'top-left' },
+  { id: 1, symbol: '△', name: 'Воздух', element: 'air', position: 'top-right' },
+  { id: 4, symbol: '≋', name: 'Вода', element: 'water', position: 'bottom-left' },
+  { id: 2, symbol: '⋮⋮', name: 'Огонь', element: 'fire', position: 'bottom-right' },
 ];
 
 const CORRECT_SEQUENCE = [3, 1, 4, 2];
@@ -23,7 +23,7 @@ export default function SecretDoorPuzzle() {
     if (solved || doorOpening || sequence.length >= 4) return;
 
     setPressedRune(id);
-    setTimeout(() => setPressedRune(null), 300);
+    setTimeout(() => setPressedRune(null), 400);
 
     const newSequence = [...sequence, id];
     setSequence(newSequence);
@@ -65,54 +65,139 @@ export default function SecretDoorPuzzle() {
   };
 
   return (
-    <div className="relative -mx-8 -my-6 min-h-[600px] md:min-h-[700px]">
-      {/* Full-bleed cave background */}
+    <div className="relative -mx-8 -my-6 min-h-[700px] md:min-h-[800px] overflow-hidden">
+      {/* Photorealistic cave stone wall background */}
       <div 
-        className="absolute inset-0 bg-cover bg-center"
+        className="absolute inset-0"
         style={{
-          backgroundImage: `url("data:image/svg+xml,%3Csvg width='1200' height='800' xmlns='http://www.w3.org/2000/svg'%3E%3Cdefs%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' /%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3C/defs%3E%3Crect width='1200' height='800' fill='%23181410'/%3E%3Crect width='1200' height='800' filter='url(%23noise)' opacity='0.15'/%3E%3C/svg%3E")`,
-          backgroundColor: '#0a0806',
+          background: `
+            radial-gradient(ellipse at 10% 30%, rgba(255, 180, 100, 0.08) 0%, transparent 40%),
+            radial-gradient(circle at 90% 70%, rgba(0, 0, 0, 0.6) 0%, transparent 50%),
+            linear-gradient(135deg, #0d0a08 0%, #1a1512 30%, #0f0c09 60%, #080604 100%)
+          `,
+          backgroundSize: 'cover',
         }}
       >
-        {/* Vignette overlay */}
-        <div className="absolute inset-0 bg-gradient-radial from-transparent via-black/40 to-black/80" />
-        
-        {/* Texture overlay for cave wall feeling */}
-        <div className="absolute inset-0 opacity-30 mix-blend-overlay" 
+        {/* High-detail stone texture overlay */}
+        <div 
+          className="absolute inset-0 opacity-40 mix-blend-overlay"
           style={{
-            backgroundImage: `repeating-linear-gradient(0deg, transparent, transparent 2px, rgba(0,0,0,.1) 2px, rgba(0,0,0,.1) 4px),
-                             repeating-linear-gradient(90deg, transparent, transparent 2px, rgba(0,0,0,.1) 2px, rgba(0,0,0,.1) 4px)`
+            backgroundImage: `
+              repeating-linear-gradient(0deg, transparent, transparent 3px, rgba(0,0,0,0.15) 3px, rgba(0,0,0,0.15) 6px),
+              repeating-linear-gradient(90deg, transparent, transparent 3px, rgba(0,0,0,0.15) 3px, rgba(0,0,0,0.15) 6px),
+              radial-gradient(ellipse at 30% 40%, rgba(80, 60, 40, 0.3) 0%, transparent 60%),
+              radial-gradient(ellipse at 70% 80%, rgba(60, 50, 40, 0.2) 0%, transparent 50%)
+            `,
+          }}
+        />
+        
+        {/* Wet stone reflections */}
+        <div 
+          className="absolute inset-0 opacity-20"
+          style={{
+            background: `
+              radial-gradient(ellipse at 20% 60%, rgba(100, 120, 140, 0.15) 0%, transparent 40%),
+              radial-gradient(ellipse at 80% 30%, rgba(80, 100, 120, 0.1) 0%, transparent 35%)
+            `,
+          }}
+        />
+
+        {/* Moss/moisture patches */}
+        <div 
+          className="absolute inset-0 opacity-25"
+          style={{
+            background: `
+              radial-gradient(circle at 15% 80%, rgba(40, 60, 30, 0.3) 0%, transparent 25%),
+              radial-gradient(circle at 85% 15%, rgba(30, 50, 35, 0.2) 0%, transparent 20%),
+              radial-gradient(circle at 50% 50%, rgba(35, 45, 40, 0.15) 0%, transparent 30%)
+            `,
+          }}
+        />
+
+        {/* Deep vignette */}
+        <div 
+          className="absolute inset-0"
+          style={{
+            background: 'radial-gradient(ellipse at center, transparent 0%, rgba(0,0,0,0.5) 60%, rgba(0,0,0,0.85) 100%)',
           }}
         />
       </div>
 
-      {/* Torch light effect */}
-      <div className="absolute top-0 left-8 w-32 h-32 bg-orange-600/20 rounded-full blur-3xl" />
-      
-      {/* Main content */}
-      <div className="relative z-10 p-8 flex flex-col min-h-[600px] md:min-h-[700px]">
+      {/* Oil lamp glow - bottom left */}
+      <div 
+        className="absolute bottom-8 left-8 w-48 h-48 pointer-events-none"
+        style={{
+          background: 'radial-gradient(circle, rgba(255, 150, 60, 0.25) 0%, rgba(255, 120, 40, 0.15) 30%, transparent 70%)',
+          filter: 'blur(30px)',
+        }}
+      />
+
+      {/* Oil lamp visual */}
+      <div className="absolute bottom-12 left-12 w-16 h-20 pointer-events-none">
+        <div className="relative w-full h-full">
+          {/* Flame */}
+          <div 
+            className="absolute bottom-6 left-1/2 -translate-x-1/2 w-6 h-8 animate-pulse"
+            style={{
+              background: 'radial-gradient(ellipse at bottom, rgba(255, 200, 100, 0.9) 0%, rgba(255, 150, 60, 0.7) 40%, rgba(255, 100, 0, 0.3) 70%, transparent 100%)',
+              filter: 'blur(2px)',
+            }}
+          />
+          {/* Lamp body */}
+          <div 
+            className="absolute bottom-0 left-1/2 -translate-x-1/2 w-12 h-4 rounded-full opacity-40"
+            style={{
+              background: 'linear-gradient(to bottom, rgba(80, 60, 40, 0.8), rgba(40, 30, 20, 0.9))',
+              boxShadow: 'inset 0 -2px 4px rgba(0,0,0,0.5)',
+            }}
+          />
+        </div>
+      </div>
+
+      <div className="relative z-10 p-8 md:p-12 min-h-[700px] md:min-h-[800px] flex flex-col">
         
-        {/* Title - minimal chrome */}
-        <div className="mb-6">
-          <h2 className="text-amber-200/90 text-xl md:text-2xl font-serif tracking-wide" 
-            style={{ textShadow: '2px 2px 8px rgba(0,0,0,0.8)' }}>
-            {solved ? 'Проход открыт' : doorOpening ? 'Древняя магия пробуждается...' : 'Тайна Горы'}
+        {/* Progress indicators - top left as small stone circles */}
+        <div className="absolute top-8 left-8 flex gap-2">
+          {[0, 1, 2, 3].map((index) => {
+            const runeId = sequence[index];
+            const hasRune = runeId !== undefined;
+            
+            return (
+              <div
+                key={index}
+                className="w-8 h-8 rounded-full relative transition-all duration-300"
+                style={{
+                  background: hasRune
+                    ? failed
+                      ? 'radial-gradient(circle, rgba(80, 20, 20, 0.7) 0%, rgba(50, 15, 15, 0.9) 100%)'
+                      : 'radial-gradient(circle, rgba(180, 120, 60, 0.5) 0%, rgba(100, 70, 40, 0.8) 100%)'
+                    : 'radial-gradient(circle, rgba(40, 35, 30, 0.6) 0%, rgba(25, 20, 18, 0.9) 100%)',
+                  boxShadow: hasRune
+                    ? 'inset 0 2px 4px rgba(0,0,0,0.5), 0 0 8px rgba(200, 150, 100, 0.3)'
+                    : 'inset 0 2px 4px rgba(0,0,0,0.6)',
+                  border: '1px solid rgba(60, 50, 40, 0.4)',
+                }}
+              />
+            );
+          })}
+        </div>
+
+        {/* Title - very subtle */}
+        <div className="absolute top-8 left-1/2 -translate-x-1/2">
+          <h2 
+            className="text-lg md:text-xl font-serif tracking-wider opacity-60"
+            style={{ 
+              color: 'rgba(200, 170, 140, 0.7)',
+              textShadow: '0 2px 8px rgba(0,0,0,0.9), 0 0 20px rgba(0,0,0,0.5)',
+            }}
+          >
+            {solved ? 'Проход открыт' : doorOpening ? '...' : 'Тайна Горы'}
           </h2>
         </div>
 
-        {/* Central door area */}
-        <div className="flex-1 flex flex-col items-center justify-center space-y-8">
-          
-          {/* Door crack effect when opening */}
-          {doorOpening && (
-            <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-              <div className="w-1 h-full bg-gradient-to-b from-transparent via-amber-500/60 to-transparent animate-pulse"
-                style={{ boxShadow: '0 0 20px 10px rgba(251, 191, 36, 0.3)' }} />
-            </div>
-          )}
-
-          {/* Stone runes carved into wall */}
-          <div className="flex flex-wrap justify-center gap-4 md:gap-6 max-w-2xl">
+        {/* Central area - 2x2 grid of carved stone rune plates */}
+        <div className="flex-1 flex items-center justify-center">
+          <div className="grid grid-cols-2 gap-6 md:gap-10 max-w-md">
             {RUNES.map((rune) => {
               const order = getRuneOrder(rune.id);
               const isPressed = isRuneInSequence(rune.id);
@@ -123,127 +208,168 @@ export default function SecretDoorPuzzle() {
                   key={rune.id}
                   onClick={() => handleRuneClick(rune.id)}
                   disabled={solved || doorOpening || isPressed}
-                  className="relative group"
-                  style={{ width: '100px', height: '100px' }}
+                  className="relative group w-28 h-28 md:w-36 md:h-36"
+                  style={{ perspective: '1000px' }}
                 >
-                  {/* Stone circle background */}
+                  {/* Stone plate background - carved into wall */}
                   <div 
-                    className={`absolute inset-0 rounded-full transition-all duration-500 ${
-                      solved 
-                        ? 'bg-amber-900/40 shadow-[inset_0_0_20px_rgba(251,191,36,0.4)]'
-                        : isPressed
-                        ? 'bg-amber-950/60 shadow-[inset_0_0_15px_rgba(251,191,36,0.2)]'
-                        : failed
-                        ? 'bg-red-950/40 shadow-[inset_0_0_15px_rgba(127,29,29,0.3)]'
-                        : 'bg-stone-950/40 shadow-[inset_0_2px_8px_rgba(0,0,0,0.6)]'
-                    } backdrop-blur-sm border border-stone-800/50`}
+                    className={`absolute inset-0 rounded-lg transition-all duration-500`}
                     style={{
-                      backgroundImage: 'radial-gradient(circle at 30% 30%, rgba(255,255,255,0.05), transparent)',
+                      background: solved
+                        ? 'radial-gradient(circle at 35% 35%, rgba(180, 120, 60, 0.4) 0%, rgba(100, 70, 40, 0.6) 40%, rgba(60, 45, 30, 0.8) 100%)'
+                        : isPressed
+                        ? 'radial-gradient(circle at 35% 35%, rgba(140, 100, 60, 0.3) 0%, rgba(80, 60, 40, 0.5) 40%, rgba(50, 40, 30, 0.7) 100%)'
+                        : failed
+                        ? 'radial-gradient(circle at 35% 35%, rgba(100, 40, 40, 0.3) 0%, rgba(70, 30, 30, 0.5) 40%, rgba(40, 25, 25, 0.7) 100%)'
+                        : 'radial-gradient(circle at 35% 35%, rgba(70, 60, 50, 0.3) 0%, rgba(50, 45, 40, 0.5) 40%, rgba(35, 30, 28, 0.7) 100%)',
+                      boxShadow: isPressed || solved
+                        ? 'inset 0 4px 12px rgba(0,0,0,0.7), inset 0 -2px 6px rgba(200, 150, 100, 0.1), 0 0 20px rgba(200, 150, 100, 0.15)'
+                        : 'inset 0 4px 12px rgba(0,0,0,0.8), inset 0 -2px 6px rgba(100, 80, 60, 0.1)',
+                      border: '2px solid rgba(50, 40, 35, 0.6)',
+                      transform: isJustPressed ? 'scale(0.98)' : 'scale(1)',
                     }}
                   >
-                    {/* Dust/ember effect on press */}
+                    {/* Carved grooves texture */}
+                    <div 
+                      className="absolute inset-0 rounded-lg opacity-40"
+                      style={{
+                        backgroundImage: `
+                          repeating-linear-gradient(45deg, transparent, transparent 2px, rgba(0,0,0,0.15) 2px, rgba(0,0,0,0.15) 4px),
+                          repeating-linear-gradient(-45deg, transparent, transparent 2px, rgba(0,0,0,0.1) 2px, rgba(0,0,0,0.1) 4px)
+                        `,
+                      }}
+                    />
+                    
+                    {/* Ember glow on press */}
                     {isJustPressed && (
-                      <div className="absolute inset-0 rounded-full bg-amber-600/30 animate-ping" />
+                      <div 
+                        className="absolute inset-0 rounded-lg animate-pulse"
+                        style={{
+                          background: 'radial-gradient(circle, rgba(255, 180, 100, 0.3) 0%, transparent 70%)',
+                        }}
+                      />
+                    )}
+
+                    {/* Dust particle effect */}
+                    {isJustPressed && (
+                      <div className="absolute inset-0 rounded-lg overflow-hidden">
+                        <div 
+                          className="absolute inset-0 animate-ping"
+                          style={{
+                            background: 'radial-gradient(circle, rgba(200, 150, 100, 0.2) 0%, transparent 60%)',
+                          }}
+                        />
+                      </div>
                     )}
                   </div>
 
-                  {/* Carved rune symbol */}
+                  {/* Carved rune symbol - deeply inset */}
                   <div 
-                    className={`relative z-10 w-full h-full flex items-center justify-center text-4xl md:text-5xl transition-all duration-300 ${
-                      solved
-                        ? 'text-amber-500/90'
-                        : isPressed
-                        ? 'text-amber-700/80'
-                        : failed
-                        ? 'text-red-900/60'
-                        : 'text-stone-600 group-hover:text-stone-500'
-                    }`}
+                    className={`relative z-10 w-full h-full flex items-center justify-center text-5xl md:text-6xl font-serif transition-all duration-300`}
                     style={{ 
-                      textShadow: isPressed || solved 
-                        ? '0 0 10px rgba(251, 191, 36, 0.3), 0 2px 4px rgba(0,0,0,0.8)' 
-                        : '0 2px 4px rgba(0,0,0,0.8), inset 0 1px 0 rgba(255,255,255,0.1)',
-                      fontFamily: 'Georgia, serif',
+                      color: solved
+                        ? 'rgba(200, 150, 100, 0.7)'
+                        : isPressed
+                        ? 'rgba(160, 120, 80, 0.6)'
+                        : failed
+                        ? 'rgba(120, 60, 60, 0.5)'
+                        : 'rgba(80, 70, 60, 0.6)',
+                      textShadow: isPressed || solved
+                        ? '0 2px 4px rgba(0,0,0,0.9), 0 0 12px rgba(255, 180, 100, 0.2), inset 0 -2px 4px rgba(0,0,0,0.5)'
+                        : '0 3px 6px rgba(0,0,0,0.9), inset 0 -2px 4px rgba(0,0,0,0.6)',
+                      filter: 'contrast(1.1)',
                     }}
                   >
                     {rune.symbol}
                   </div>
 
-                  {/* Order indicator - carved notch */}
+                  {/* Order number - small carved notch */}
                   {order !== null && (
-                    <div className="absolute -top-2 -right-2 w-7 h-7 rounded-full bg-stone-900/80 border border-amber-800/60 flex items-center justify-center backdrop-blur-sm">
-                      <span className="text-amber-600/90 text-xs font-bold" style={{ textShadow: '0 1px 2px rgba(0,0,0,0.8)' }}>
-                        {order}
-                      </span>
+                    <div 
+                      className="absolute -top-2 -right-2 w-7 h-7 rounded-full flex items-center justify-center text-xs font-bold"
+                      style={{
+                        background: 'radial-gradient(circle, rgba(140, 100, 60, 0.7) 0%, rgba(80, 60, 40, 0.9) 100%)',
+                        boxShadow: 'inset 0 2px 4px rgba(0,0,0,0.6), 0 0 8px rgba(200, 150, 100, 0.3)',
+                        border: '1px solid rgba(100, 80, 60, 0.5)',
+                        color: 'rgba(255, 220, 180, 0.9)',
+                        textShadow: '0 1px 2px rgba(0,0,0,0.8)',
+                      }}
+                    >
+                      {order}
                     </div>
                   )}
 
-                  {/* Hover glow for active runes */}
+                  {/* Hover glow - torch light catching the edge */}
                   {!solved && !isPressed && !doorOpening && (
-                    <div className="absolute inset-0 rounded-full opacity-0 group-hover:opacity-100 transition-opacity duration-300 bg-amber-950/20 shadow-[inset_0_0_15px_rgba(251,191,36,0.15)]" />
+                    <div 
+                      className="absolute inset-0 rounded-lg opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none"
+                      style={{
+                        background: 'radial-gradient(circle at 30% 30%, rgba(200, 150, 100, 0.15) 0%, transparent 60%)',
+                      }}
+                    />
                   )}
                 </button>
               );
             })}
           </div>
-
-          {/* Sequence progress - stone notches */}
-          <div className="flex gap-3 p-4 rounded-lg bg-black/40 backdrop-blur-sm border border-stone-800/30">
-            {[0, 1, 2, 3].map((index) => {
-              const runeId = sequence[index];
-              const rune = runeId ? RUNES.find((r) => r.id === runeId) : null;
-              
-              return (
-                <div
-                  key={index}
-                  className={`w-10 h-10 rounded border flex items-center justify-center text-lg transition-all duration-300 ${
-                    rune
-                      ? failed
-                        ? 'bg-red-950/50 border-red-900/60 text-red-800/80 shadow-[inset_0_0_10px_rgba(127,29,29,0.3)]'
-                        : 'bg-amber-950/50 border-amber-900/60 text-amber-700/90 shadow-[inset_0_0_10px_rgba(251,191,36,0.2)]'
-                      : 'bg-stone-950/30 border-stone-800/40 shadow-[inset_0_2px_4px_rgba(0,0,0,0.5)]'
-                  }`}
-                >
-                  {rune?.symbol}
-                </div>
-              );
-            })}
-          </div>
-
-          {/* Reset button - subtle */}
-          {!solved && sequence.length > 0 && !doorOpening && (
-            <button
-              onClick={() => setSequence([])}
-              className="text-xs text-stone-500 hover:text-stone-400 transition-colors px-3 py-1 rounded border border-stone-800/30 bg-black/20 backdrop-blur-sm"
-            >
-              сбросить
-            </button>
-          )}
         </div>
 
-        {/* Parchment riddle - diegetic */}
+        {/* Torn parchment riddle - bottom right */}
         {!solved && (
-          <div className="mt-auto">
+          <div className="absolute bottom-8 right-8 max-w-xs md:max-w-sm">
             <div 
-              className="relative mx-auto max-w-md p-6 bg-amber-50/95 rounded-sm shadow-2xl"
+              className="relative p-5 md:p-6"
               style={{
-                backgroundImage: `url("data:image/svg+xml,%3Csvg width='400' height='300' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='paper'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.04' numOctaves='5' result='noise'/%3E%3CfeDiffuseLighting in='noise' lighting-color='%23f5f5dc' surfaceScale='1'%3E%3CfeDistantLight azimuth='45' elevation='60'/%3E%3C/feDiffuseLighting%3E%3C/filter%3E%3Crect width='400' height='300' fill='%23e8dcc4' filter='url(%23paper)'/%3E%3C/svg%3E")`,
-                backgroundSize: 'cover',
-                border: '1px solid rgba(120, 80, 40, 0.3)',
-                transform: 'rotate(-0.5deg)',
+                background: `
+                  linear-gradient(135deg, rgba(220, 200, 170, 0.95) 0%, rgba(200, 180, 150, 0.97) 50%, rgba(190, 170, 140, 0.95) 100%)
+                `,
+                clipPath: 'polygon(2% 0%, 98% 0%, 100% 3%, 100% 92%, 97% 98%, 95% 100%, 8% 100%, 3% 98%, 0% 95%, 0% 5%)',
+                filter: 'drop-shadow(3px 5px 15px rgba(0,0,0,0.7))',
               }}
             >
-              {/* Torn edge effect */}
-              <div className="absolute -top-1 left-0 right-0 h-2 bg-gradient-to-b from-amber-900/10 to-transparent" />
-              <div className="absolute -bottom-1 left-0 right-0 h-2 bg-gradient-to-t from-amber-900/10 to-transparent" />
-              
-              {/* Stains */}
-              <div className="absolute top-2 right-4 w-8 h-8 bg-amber-900/5 rounded-full blur-sm" />
-              <div className="absolute bottom-4 left-6 w-6 h-6 bg-stone-900/5 rounded-full blur-sm" />
+              {/* Burnt edges effect */}
+              <div 
+                className="absolute inset-0 opacity-30 pointer-events-none"
+                style={{
+                  background: `
+                    radial-gradient(ellipse at 95% 5%, rgba(60, 40, 20, 0.8) 0%, transparent 15%),
+                    radial-gradient(ellipse at 5% 95%, rgba(50, 35, 20, 0.7) 0%, transparent 12%),
+                    radial-gradient(ellipse at 92% 88%, rgba(55, 35, 20, 0.6) 0%, transparent 10%)
+                  `,
+                }}
+              />
 
+              {/* Stains and aging */}
+              <div 
+                className="absolute inset-0 opacity-15 pointer-events-none mix-blend-multiply"
+                style={{
+                  background: `
+                    radial-gradient(circle at 70% 30%, rgba(120, 80, 40, 0.5) 0%, transparent 25%),
+                    radial-gradient(circle at 30% 70%, rgba(100, 70, 50, 0.4) 0%, transparent 20%),
+                    radial-gradient(circle at 85% 60%, rgba(90, 65, 45, 0.3) 0%, transparent 15%)
+                  `,
+                }}
+              />
+
+              {/* Paper texture */}
+              <div 
+                className="absolute inset-0 opacity-20 mix-blend-overlay pointer-events-none"
+                style={{
+                  backgroundImage: `
+                    repeating-linear-gradient(0deg, transparent, transparent 1px, rgba(100, 80, 60, 0.1) 1px, rgba(100, 80, 60, 0.1) 2px),
+                    repeating-linear-gradient(90deg, transparent, transparent 1px, rgba(100, 80, 60, 0.1) 1px, rgba(100, 80, 60, 0.1) 2px)
+                  `,
+                }}
+              />
+
+              {/* Riddle text */}
               <div className="relative">
                 <p 
-                  className="text-stone-800 text-sm leading-relaxed italic text-center font-serif"
-                  style={{ textShadow: '0 1px 1px rgba(255,255,255,0.5)' }}
+                  className="text-sm md:text-base leading-relaxed italic text-center font-serif"
+                  style={{ 
+                    color: 'rgba(50, 35, 25, 0.95)',
+                    textShadow: '0 1px 1px rgba(255, 255, 255, 0.3)',
+                  }}
                 >
                   Из земли родился,<br />
                   воздухом вознесся,<br />
@@ -255,31 +381,104 @@ export default function SecretDoorPuzzle() {
           </div>
         )}
 
-        {/* Failure message - subtle */}
+        {/* Reset button - minimal */}
+        {!solved && sequence.length > 0 && !doorOpening && (
+          <button
+            onClick={() => setSequence([])}
+            className="absolute top-20 right-8 text-xs px-3 py-1 rounded transition-all duration-300"
+            style={{
+              background: 'rgba(40, 35, 30, 0.5)',
+              border: '1px solid rgba(80, 70, 60, 0.3)',
+              color: 'rgba(150, 130, 110, 0.8)',
+              textShadow: '0 1px 2px rgba(0,0,0,0.8)',
+              backdropFilter: 'blur(4px)',
+            }}
+          >
+            сбросить
+          </button>
+        )}
+
+        {/* Door crack when opening */}
+        {doorOpening && (
+          <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+            <div 
+              className="w-1 h-full animate-pulse"
+              style={{
+                background: 'linear-gradient(to bottom, transparent 0%, rgba(255, 180, 100, 0.6) 20%, rgba(255, 180, 100, 0.8) 50%, rgba(255, 180, 100, 0.6) 80%, transparent 100%)',
+                boxShadow: '0 0 30px 15px rgba(255, 180, 100, 0.4)',
+                filter: 'blur(2px)',
+              }}
+            />
+          </div>
+        )}
+
+        {/* Failure message */}
         {failed && (
-          <div className="mt-4 mx-auto max-w-md text-center">
-            <p className="text-red-400/80 text-sm backdrop-blur-sm bg-black/30 px-4 py-2 rounded border border-red-900/30">
+          <div className="absolute bottom-32 left-1/2 -translate-x-1/2 text-center">
+            <p 
+              className="text-sm px-4 py-2 rounded"
+              style={{
+                background: 'rgba(80, 30, 30, 0.6)',
+                border: '1px solid rgba(120, 50, 50, 0.4)',
+                color: 'rgba(200, 150, 140, 0.9)',
+                textShadow: '0 1px 3px rgba(0,0,0,0.9)',
+                backdropFilter: 'blur(6px)',
+              }}
+            >
               Камень не поддаётся...
             </p>
           </div>
         )}
 
-        {/* Success state */}
+        {/* Success overlay */}
         {solved && (
-          <div className="absolute inset-0 flex items-center justify-center bg-black/60 backdrop-blur-sm z-20">
-            <div className="max-w-lg p-8 bg-gradient-to-br from-amber-950/90 to-stone-950/90 rounded-lg border border-amber-800/40 shadow-2xl text-center space-y-4">
-              <div className="text-5xl mb-4 animate-pulse">✦</div>
-              <h3 className="text-2xl md:text-3xl font-serif text-amber-400">
+          <div className="absolute inset-0 flex items-center justify-center bg-black/70 backdrop-blur-md z-30">
+            <div 
+              className="max-w-lg p-8 rounded-lg text-center space-y-4"
+              style={{
+                background: 'linear-gradient(135deg, rgba(60, 50, 40, 0.95) 0%, rgba(40, 35, 30, 0.97) 100%)',
+                border: '2px solid rgba(140, 100, 60, 0.5)',
+                boxShadow: '0 10px 40px rgba(0,0,0,0.8), inset 0 1px 0 rgba(200, 150, 100, 0.1)',
+              }}
+            >
+              <div 
+                className="text-5xl mb-4 animate-pulse"
+                style={{ 
+                  color: 'rgba(255, 200, 120, 0.9)',
+                  filter: 'drop-shadow(0 0 20px rgba(255, 180, 100, 0.5))',
+                }}
+              >
+                ✦
+              </div>
+              <h3 
+                className="text-2xl md:text-3xl font-serif"
+                style={{ 
+                  color: 'rgba(220, 180, 140, 0.95)',
+                  textShadow: '0 2px 8px rgba(0,0,0,0.8)',
+                }}
+              >
                 Дверь отворилась
               </h3>
-              <p className="text-stone-300 text-sm leading-relaxed">
+              <p 
+                className="text-sm leading-relaxed"
+                style={{ 
+                  color: 'rgba(180, 160, 140, 0.9)',
+                  textShadow: '0 1px 4px rgba(0,0,0,0.8)',
+                }}
+              >
                 Древний камень медленно уходит в стену, открывая тёмный проход.
                 Тёплый воздух вырывается из глубины, неся запах земли и забытых веков.
               </p>
               <div className="pt-4">
                 <button
                   onClick={handleReset}
-                  className="bg-amber-900/60 hover:bg-amber-800/60 text-amber-200 px-6 py-2 rounded border border-amber-700/50 transition-colors text-sm font-medium backdrop-blur-sm"
+                  className="px-6 py-2 rounded text-sm font-medium transition-all duration-300"
+                  style={{
+                    background: 'rgba(100, 70, 40, 0.7)',
+                    border: '1px solid rgba(140, 100, 60, 0.6)',
+                    color: 'rgba(220, 200, 180, 0.95)',
+                    textShadow: '0 1px 2px rgba(0,0,0,0.8)',
+                  }}
                 >
                   Закрыть проход
                 </button>
@@ -288,10 +487,19 @@ export default function SecretDoorPuzzle() {
           </div>
         )}
 
-        {/* Opening state overlay */}
+        {/* Opening message */}
         {doorOpening && (
           <div className="absolute inset-0 flex items-center justify-center pointer-events-none z-20">
-            <p className="text-amber-400/90 text-lg md:text-xl font-serif animate-pulse backdrop-blur-sm bg-black/40 px-6 py-3 rounded border border-amber-900/30">
+            <p 
+              className="text-lg md:text-xl font-serif animate-pulse px-6 py-3 rounded"
+              style={{
+                background: 'rgba(40, 35, 30, 0.8)',
+                border: '1px solid rgba(140, 100, 60, 0.4)',
+                color: 'rgba(220, 180, 140, 0.95)',
+                textShadow: '0 2px 6px rgba(0,0,0,0.9)',
+                backdropFilter: 'blur(8px)',
+              }}
+            >
               Руны светятся...
             </p>
           </div>
