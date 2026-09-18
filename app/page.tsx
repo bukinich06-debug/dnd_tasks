@@ -11,7 +11,14 @@ const difficultyColors = {
   hard: 'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-300',
 };
 
+const difficultyLabels = {
+  easy: 'Легко',
+  medium: 'Средне',
+  hard: 'Сложно',
+};
+
 const typeIcons = {
+  adventure: '🏰',
   sequence: '🔢',
   pattern: '🧩',
   logic: '💡',
@@ -38,10 +45,10 @@ export default function Home() {
       <div className="container mx-auto px-4 py-12 max-w-4xl">
         <header className="text-center mb-12">
           <h1 className="text-5xl font-bold text-gray-900 dark:text-white mb-4">
-            Puzzle Arena
+            Арена Головоломок
           </h1>
           <p className="text-xl text-gray-600 dark:text-gray-300">
-            Challenge your mind with interactive puzzles
+            Испытайте свой разум интерактивными головоломками
           </p>
           {solvedCount > 0 && (
             <div className="mt-4 inline-block bg-white dark:bg-gray-800 px-6 py-3 rounded-full shadow-md">
@@ -50,13 +57,15 @@ export default function Home() {
                 {' / '}
                 <span className="text-gray-600 dark:text-gray-400">{puzzles.length}</span>
                 {' '}
-                <span className="text-gray-700 dark:text-gray-300">puzzles solved</span>
+                <span className="text-gray-700 dark:text-gray-300">
+                  {solvedCount === 1 ? 'головоломка решена' : 'головоломок решено'}
+                </span>
               </p>
             </div>
           )}
         </header>
 
-        <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+        <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-2">
           {puzzles.map((puzzle) => (
             <Link
               key={puzzle.id}
@@ -67,7 +76,7 @@ export default function Home() {
                 <div className="flex items-start justify-between mb-3">
                   <span className="text-4xl">{typeIcons[puzzle.type]}</span>
                   {progress[puzzle.id] && (
-                    <span className="text-2xl" title="Solved!">
+                    <span className="text-2xl" title="Решено!">
                       ✓
                     </span>
                   )}
@@ -84,10 +93,10 @@ export default function Home() {
                       difficultyColors[puzzle.difficulty]
                     }`}
                   >
-                    {puzzle.difficulty}
+                    {difficultyLabels[puzzle.difficulty]}
                   </span>
                   <span className="text-blue-600 dark:text-blue-400 font-medium text-sm">
-                    Play →
+                    Играть →
                   </span>
                 </div>
               </div>
@@ -96,7 +105,7 @@ export default function Home() {
         </div>
 
         <footer className="mt-16 text-center text-gray-600 dark:text-gray-400">
-          <p>More puzzles coming soon! Check back for new challenges.</p>
+          <p>Скоро появятся новые головоломки! Следите за обновлениями.</p>
         </footer>
       </div>
     </div>

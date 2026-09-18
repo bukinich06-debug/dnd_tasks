@@ -8,16 +8,16 @@ export default function NotFound() {
           404
         </h1>
         <h2 className="text-2xl font-semibold text-gray-700 dark:text-gray-300 mb-4">
-          Puzzle Not Found
+          Головоломка не найдена
         </h2>
         <p className="text-gray-600 dark:text-gray-400 mb-8">
-          The puzzle you're looking for doesn't exist or has been moved.
+          Головоломка, которую вы ищете, не существует или была перемещена.
         </p>
         <Link
           href="/"
           className="inline-block bg-blue-600 hover:bg-blue-700 text-white font-semibold px-6 py-3 rounded-lg transition-colors"
         >
-          Back to Puzzle Arena
+          Назад к Арене Головоломок
         </Link>
       </div>
     </div>

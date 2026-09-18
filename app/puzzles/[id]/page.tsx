@@ -3,9 +3,11 @@ import { getPuzzleById } from '@/lib/puzzles';
 import ColorSequencePuzzle from '@/components/puzzles/ColorSequencePuzzle';
 import NumberPairsPuzzle from '@/components/puzzles/NumberPairsPuzzle';
 import LightsOutPuzzle from '@/components/puzzles/LightsOutPuzzle';
+import SecretDoorPuzzle from '@/components/puzzles/SecretDoorPuzzle';
 import { notFound } from 'next/navigation';
 
 const puzzleComponents = {
+  'secret-door': SecretDoorPuzzle,
   'color-sequence': ColorSequencePuzzle,
   'number-pairs': NumberPairsPuzzle,
   'lights-out': LightsOutPuzzle,
@@ -13,6 +15,7 @@ const puzzleComponents = {
 
 export function generateStaticParams() {
   return [
+    { id: 'secret-door' },
     { id: 'color-sequence' },
     { id: 'number-pairs' },
     { id: 'lights-out' },
@@ -43,6 +46,12 @@ export default async function PuzzlePage({
     hard: 'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-300',
   };
 
+  const difficultyLabels = {
+    easy: 'Легко',
+    medium: 'Средне',
+    hard: 'Сложно',
+  };
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 dark:from-gray-900 dark:to-gray-800">
       <div className="container mx-auto px-4 py-8 max-w-3xl">
@@ -51,7 +60,7 @@ export default async function PuzzlePage({
             href="/"
             className="inline-flex items-center text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 font-medium"
           >
-            ← Back to Puzzles
+            ← Назад к головоломкам
           </Link>
         </div>
 
@@ -66,7 +75,7 @@ export default async function PuzzlePage({
                   difficultyColors[puzzle.difficulty]
                 }`}
               >
-                {puzzle.difficulty}
+                {difficultyLabels[puzzle.difficulty]}
               </span>
             </div>
             <p className="text-gray-600 dark:text-gray-300 text-lg">

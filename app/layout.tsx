@@ -13,14 +13,14 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Puzzle Arena - Interactive Brain Teasers",
-  description: "Challenge your mind with interactive puzzles. Solve sequences, match patterns, and master logic challenges.",
+  title: "Арена Головоломок - Интерактивные Загадки",
+  description: "Испытайте свой разум интерактивными головоломками. Решайте последовательности, находите совпадения и справляйтесь с логическими вызовами.",
 };
 
 export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
     <html
-      lang="en"
+      lang="ru"
       className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
     >
       <body className="min-h-full flex flex-col">{children}</body>
