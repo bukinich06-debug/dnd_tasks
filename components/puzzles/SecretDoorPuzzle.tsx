@@ -4,13 +4,13 @@ import { useState } from 'react';
 import { markPuzzleSolved } from '@/lib/progress';
 import Image from 'next/image';
 
-// Rune positions mapped to the actual carved runes in the concept image
-// Using percentage-based positioning to overlay clickable areas
+// CORRECTED positions: runes are in the CENTER panel of the concept image
+// Measured from the actual carved rune locations in scene.png
 const RUNES = [
-  { id: 3, name: 'Земля', element: 'earth', position: { top: '22%', left: '22%' } },
-  { id: 1, name: 'Воздух', element: 'air', position: { top: '22%', left: '44%' } },
-  { id: 4, name: 'Вода', element: 'water', position: { top: '44%', left: '22%' } },
-  { id: 2, name: 'Огонь', element: 'fire', position: { top: '44%', left: '44%' } },
+  { id: 3, name: 'Земля', element: 'earth', position: { top: '30%', left: '35%' } },  // Top-left rune
+  { id: 1, name: 'Воздух', element: 'air', position: { top: '30%', left: '54%' } },   // Top-right rune
+  { id: 4, name: 'Вода', element: 'water', position: { top: '48%', left: '35%' } },   // Bottom-left rune
+  { id: 2, name: 'Огонь', element: 'fire', position: { top: '48%', left: '54%' } },   // Bottom-right rune
 ];
 
 const CORRECT_SEQUENCE = [3, 1, 4, 2]; // Earth, Air, Water, Fire
@@ -21,13 +21,12 @@ export default function SecretDoorPuzzle() {
   const [failed, setFailed] = useState(false);
   const [doorOpening, setDoorOpening] = useState(false);
   const [hoveredRune, setHoveredRune] = useState<number | null>(null);
-  const [pressedRune, setPressedRune] = useState<number | null>(null);
 
   const handleRuneClick = (id: number) => {
-    if (solved || doorOpening || sequence.length >= 4) return;
-
-    setPressedRune(id);
-    setTimeout(() => setPressedRune(null), 300);
+    if (solved || doorOpening) return;
+    
+    // Allow clicking if sequence isn't full yet
+    if (sequence.length >= 4) return;
 
     const newSequence = [...sequence, id];
     setSequence(newSequence);
@@ -51,7 +50,7 @@ export default function SecretDoorPuzzle() {
       setTimeout(() => {
         setSequence([]);
         setFailed(false);
-      }, 1500);
+      }, 1800);
     }
   };
 
@@ -62,191 +61,248 @@ export default function SecretDoorPuzzle() {
     setDoorOpening(false);
   };
 
-  const isRuneInSequence = (id: number) => sequence.includes(id);
+  const getRuneOrder = (id: number) => {
+    const index = sequence.indexOf(id);
+    return index >= 0 ? index + 1 : null;
+  };
 
   return (
-    <div className="relative -mx-8 -my-6 w-screen h-screen max-w-full max-h-full min-h-[600px] overflow-hidden bg-black">
-      {/* The actual concept image as background - this IS the UI */}
-      <div className="absolute inset-0">
+    <div className="relative w-full min-h-screen bg-black flex items-center justify-center overflow-hidden -mx-8 -my-6">
+      {/* Full concept image with object-contain - NO cropping */}
+      <div className="relative w-full h-screen">
         <Image
           src="/puzzles/secret-door/scene.png"
           alt="Secret cave door"
           fill
-          className="object-cover"
+          className="object-contain"
           priority
           quality={100}
         />
-      </div>
 
-      {/* Invisible clickable hotspots positioned over the carved runes */}
-      {RUNES.map((rune) => {
-        const isPressed = isRuneInSequence(rune.id);
-        const isHovered = hoveredRune === rune.id;
-        const isJustPressed = pressedRune === rune.id;
-
-        return (
-          <button
-            key={rune.id}
-            onClick={() => handleRuneClick(rune.id)}
-            onMouseEnter={() => setHoveredRune(rune.id)}
-            onMouseLeave={() => setHoveredRune(null)}
-            disabled={solved || doorOpening || isPressed}
-            className="absolute w-[15%] aspect-square cursor-pointer transition-all duration-200"
-            style={{
-              top: rune.position.top,
-              left: rune.position.left,
-              transform: isJustPressed ? 'scale(0.95)' : 'scale(1)',
-            }}
-            title={rune.name}
-          >
-            {/* Very subtle hover glow - torch light catching the stone */}
-            {isHovered && !isPressed && (
-              <div
-                className="absolute inset-0 rounded-full transition-opacity duration-300"
-                style={{
-                  background: 'radial-gradient(circle, rgba(255, 180, 100, 0.15) 0%, transparent 70%)',
-                  boxShadow: '0 0 30px rgba(255, 180, 100, 0.2)',
-                }}
-              />
-            )}
-
-            {/* Pressed state - ember glow */}
-            {isPressed && (
-              <div
-                className="absolute inset-0 rounded-full"
-                style={{
-                  background: 'radial-gradient(circle, rgba(255, 150, 80, 0.25) 0%, transparent 70%)',
-                  boxShadow: 'inset 0 0 20px rgba(255, 150, 80, 0.3)',
-                }}
-              />
-            )}
-
-            {/* Just pressed - dust pulse */}
-            {isJustPressed && (
-              <div
-                className="absolute inset-0 rounded-full animate-ping"
-                style={{
-                  background: 'radial-gradient(circle, rgba(255, 180, 100, 0.3) 0%, transparent 60%)',
-                }}
-              />
-            )}
-          </button>
-        );
-      })}
-
-      {/* Progress indicators - subtle highlights on the 4 stone circles top-left in the image */}
-      <div className="absolute top-[3%] left-[3%] flex gap-[1%]">
-        {[0, 1, 2, 3].map((index) => {
-          const hasRune = sequence[index] !== undefined;
-          return (
-            <div
-              key={index}
-              className="w-[32px] h-[32px] rounded-full transition-all duration-300"
+        {/* Instruction text - positioned above the scene */}
+        {!solved && (
+          <div className="absolute top-4 left-1/2 -translate-x-1/2 text-center px-4 z-10">
+            <p
+              className="text-sm md:text-base font-serif"
               style={{
-                background: hasRune
-                  ? failed
-                    ? 'radial-gradient(circle, rgba(255, 80, 80, 0.4) 0%, transparent 70%)'
-                    : 'radial-gradient(circle, rgba(255, 180, 100, 0.4) 0%, transparent 70%)'
-                  : 'transparent',
-                boxShadow: hasRune
-                  ? '0 0 15px rgba(255, 180, 100, 0.3)'
-                  : 'none',
+                color: 'rgba(230, 210, 180, 0.95)',
+                textShadow: '0 2px 10px rgba(0,0,0,1), 0 0 5px rgba(0,0,0,1)',
               }}
-            />
+            >
+              Нажмите руны стихий в правильной последовательности
+            </p>
+          </div>
+        )}
+
+        {/* Clickable hotspots - positioned EXACTLY on the carved runes */}
+        {RUNES.map((rune) => {
+          const order = getRuneOrder(rune.id);
+          const isInSequence = order !== null;
+          const isHovered = hoveredRune === rune.id;
+          const isClickable = !solved && !doorOpening && sequence.length < 4;
+
+          return (
+            <button
+              key={rune.id}
+              onClick={() => handleRuneClick(rune.id)}
+              onMouseEnter={() => setHoveredRune(rune.id)}
+              onMouseLeave={() => setHoveredRune(null)}
+              disabled={!isClickable}
+              className="absolute z-20 cursor-pointer transition-all duration-200"
+              style={{
+                top: rune.position.top,
+                left: rune.position.left,
+                width: '13%',
+                height: '13%',
+                transform: 'translate(-50%, -50%)',
+              }}
+              title={rune.name}
+            >
+              {/* VISIBLE stone ring outline - shows what's clickable */}
+              <div
+                className="absolute inset-0 rounded-full transition-all duration-300"
+                style={{
+                  border: isInSequence
+                    ? '3px solid rgba(255, 180, 100, 0.7)'
+                    : isHovered && isClickable
+                    ? '3px solid rgba(255, 200, 120, 0.5)'
+                    : '2px solid rgba(150, 120, 90, 0.3)',
+                  boxShadow: isInSequence
+                    ? '0 0 20px rgba(255, 180, 100, 0.5), inset 0 0 20px rgba(255, 180, 100, 0.2)'
+                    : isHovered && isClickable
+                    ? '0 0 15px rgba(255, 200, 120, 0.4)'
+                    : 'none',
+                  background: isInSequence
+                    ? 'radial-gradient(circle, rgba(255, 180, 100, 0.15) 0%, transparent 70%)'
+                    : isHovered && isClickable
+                    ? 'radial-gradient(circle, rgba(255, 200, 120, 0.1) 0%, transparent 70%)'
+                    : 'transparent',
+                }}
+              />
+
+              {/* Order number - shows which rune was pressed in sequence */}
+              {order !== null && (
+                <div
+                  className="absolute inset-0 flex items-center justify-center"
+                  style={{
+                    fontSize: '3rem',
+                    fontWeight: 'bold',
+                    color: 'rgba(255, 220, 180, 0.95)',
+                    textShadow: '0 2px 8px rgba(0,0,0,0.9), 0 0 20px rgba(255, 180, 100, 0.6)',
+                  }}
+                >
+                  {order}
+                </div>
+              )}
+
+              {/* Hover glow for clickable runes */}
+              {isHovered && isClickable && (
+                <div
+                  className="absolute inset-0 rounded-full animate-pulse"
+                  style={{
+                    background: 'radial-gradient(circle, rgba(255, 200, 120, 0.2) 0%, transparent 60%)',
+                  }}
+                />
+              )}
+            </button>
           );
         })}
-      </div>
 
-      {/* Russian hint - minimal overlay not covering the parchment art */}
-      {!solved && (
-        <div className="absolute top-[4%] left-1/2 -translate-x-1/2 text-center">
-          <p
-            className="text-xs md:text-sm font-serif italic opacity-70"
+        {/* Progress indicators - subtle overlays on stone circles (top-left) */}
+        <div className="absolute top-[3%] left-[3%] flex gap-2 z-10">
+          {[0, 1, 2, 3].map((index) => {
+            const hasRune = sequence[index] !== undefined;
+            return (
+              <div
+                key={index}
+                className="w-8 h-8 rounded-full transition-all duration-300"
+                style={{
+                  background: hasRune
+                    ? failed
+                      ? 'radial-gradient(circle, rgba(255, 100, 100, 0.5) 0%, rgba(200, 60, 60, 0.3) 100%)'
+                      : 'radial-gradient(circle, rgba(255, 180, 100, 0.5) 0%, rgba(200, 140, 80, 0.3) 100%)'
+                    : 'rgba(80, 70, 60, 0.3)',
+                  border: hasRune ? '2px solid rgba(255, 180, 100, 0.6)' : '1px solid rgba(120, 100, 80, 0.4)',
+                  boxShadow: hasRune ? '0 0 10px rgba(255, 180, 100, 0.4)' : 'none',
+                }}
+              />
+            );
+          })}
+        </div>
+
+        {/* VISIBLE Reset button */}
+        {!solved && sequence.length > 0 && !doorOpening && (
+          <button
+            onClick={() => setSequence([])}
+            className="absolute top-4 right-4 px-4 py-2 rounded transition-all duration-300 z-10 text-sm font-medium"
             style={{
-              color: 'rgba(220, 200, 180, 0.9)',
-              textShadow: '0 2px 8px rgba(0,0,0,0.9), 0 0 3px rgba(0,0,0,1)',
+              background: 'rgba(60, 50, 40, 0.85)',
+              border: '2px solid rgba(140, 110, 80, 0.6)',
+              color: 'rgba(220, 200, 180, 0.95)',
+              textShadow: '0 1px 3px rgba(0,0,0,0.8)',
+              boxShadow: '0 2px 10px rgba(0,0,0,0.5)',
             }}
           >
-            Найдите правильную последовательность стихий
-          </p>
-        </div>
-      )}
+            Сбросить
+          </button>
+        )}
 
-      {/* Failure overlay - brief red vignette */}
-      {failed && (
-        <div
-          className="absolute inset-0 pointer-events-none animate-pulse"
-          style={{
-            background: 'radial-gradient(ellipse at center, transparent 40%, rgba(150, 30, 30, 0.4) 100%)',
-            animation: 'pulse 0.5s ease-out',
-          }}
-        />
-      )}
-
-      {/* Door opening - amber crack overlay */}
-      {doorOpening && (
-        <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+        {/* Failure overlay - red vignette */}
+        {failed && (
           <div
-            className="w-1 h-full animate-pulse"
+            className="absolute inset-0 pointer-events-none z-30"
             style={{
-              background: 'linear-gradient(to bottom, transparent 0%, rgba(255, 180, 100, 0.7) 20%, rgba(255, 180, 100, 0.9) 50%, rgba(255, 180, 100, 0.7) 80%, transparent 100%)',
-              boxShadow: '0 0 40px 20px rgba(255, 180, 100, 0.5)',
-              filter: 'blur(3px)',
+              background: 'radial-gradient(ellipse at center, transparent 30%, rgba(180, 40, 40, 0.5) 100%)',
+              animation: 'pulse 0.8s ease-out',
             }}
           />
-        </div>
-      )}
+        )}
 
-      {/* Success overlay - minimal message, doesn't replace the scene */}
-      {solved && (
-        <div className="absolute inset-0 flex items-center justify-center bg-black/50 backdrop-blur-sm">
-          <div
-            className="max-w-md p-8 rounded-lg text-center space-y-4"
-            style={{
-              background: 'rgba(30, 25, 20, 0.95)',
-              border: '2px solid rgba(200, 150, 100, 0.4)',
-              boxShadow: '0 10px 50px rgba(0,0,0,0.9)',
-            }}
-          >
+        {/* Door opening - amber crack */}
+        {doorOpening && (
+          <div className="absolute inset-0 flex items-center justify-center pointer-events-none z-30">
             <div
-              className="text-5xl mb-4"
+              className="w-1 h-full animate-pulse"
               style={{
-                filter: 'drop-shadow(0 0 20px rgba(255, 180, 100, 0.6))',
+                background: 'linear-gradient(to bottom, transparent 0%, rgba(255, 180, 100, 0.8) 20%, rgba(255, 180, 100, 1) 50%, rgba(255, 180, 100, 0.8) 80%, transparent 100%)',
+                boxShadow: '0 0 50px 25px rgba(255, 180, 100, 0.6)',
+                filter: 'blur(4px)',
               }}
-            >
-              ✦
-            </div>
-            <h3
-              className="text-2xl md:text-3xl font-serif mb-2"
-              style={{
-                color: 'rgba(220, 180, 140, 0.95)',
-                textShadow: '0 2px 10px rgba(0,0,0,0.8)',
-              }}
-            >
-              Дверь открыта
-            </h3>
-            <p
-              className="text-sm leading-relaxed mb-6"
-              style={{
-                color: 'rgba(200, 180, 160, 0.9)',
-              }}
-            >
-              Древний камень отступает, открывая проход в глубины горы.
-            </p>
-            <button
-              onClick={handleReset}
-              className="px-6 py-2 rounded text-sm font-medium transition-all"
-              style={{
-                background: 'rgba(120, 80, 50, 0.8)',
-                border: '1px solid rgba(180, 140, 100, 0.5)',
-                color: 'rgba(230, 210, 190, 0.95)',
-              }}
-            >
-              Закрыть проход
-            </button>
+            />
           </div>
-        </div>
-      )}
+        )}
+
+        {/* Success modal */}
+        {solved && (
+          <div className="absolute inset-0 flex items-center justify-center bg-black/60 backdrop-blur-sm z-40">
+            <div
+              className="max-w-lg mx-4 p-8 rounded-lg text-center space-y-4"
+              style={{
+                background: 'rgba(35, 30, 25, 0.95)',
+                border: '2px solid rgba(200, 160, 120, 0.5)',
+                boxShadow: '0 10px 60px rgba(0,0,0,0.9)',
+              }}
+            >
+              <div
+                className="text-6xl mb-4"
+                style={{
+                  filter: 'drop-shadow(0 0 30px rgba(255, 180, 100, 0.7))',
+                }}
+              >
+                ✦
+              </div>
+              <h3
+                className="text-3xl md:text-4xl font-serif mb-3"
+                style={{
+                  color: 'rgba(230, 190, 150, 0.95)',
+                  textShadow: '0 2px 10px rgba(0,0,0,0.8)',
+                }}
+              >
+                Дверь открыта
+              </h3>
+              <p
+                className="text-base leading-relaxed mb-6"
+                style={{
+                  color: 'rgba(210, 190, 170, 0.9)',
+                }}
+              >
+                Древний камень отступает, открывая проход в глубины горы.
+                Тёплый воздух несёт запах земли и забытых веков.
+              </p>
+              <button
+                onClick={handleReset}
+                className="px-8 py-3 rounded text-base font-medium transition-all"
+                style={{
+                  background: 'rgba(120, 90, 60, 0.9)',
+                  border: '2px solid rgba(180, 150, 120, 0.6)',
+                  color: 'rgba(240, 220, 200, 0.95)',
+                  boxShadow: '0 4px 15px rgba(0,0,0,0.5)',
+                }}
+              >
+                Закрыть проход
+              </button>
+            </div>
+          </div>
+        )}
+
+        {/* Opening message */}
+        {doorOpening && (
+          <div className="absolute inset-0 flex items-center justify-center pointer-events-none z-30">
+            <p
+              className="text-xl md:text-2xl font-serif animate-pulse px-8 py-4 rounded"
+              style={{
+                background: 'rgba(40, 35, 30, 0.9)',
+                border: '2px solid rgba(180, 140, 100, 0.5)',
+                color: 'rgba(230, 200, 170, 0.95)',
+                textShadow: '0 2px 8px rgba(0,0,0,0.9)',
+                boxShadow: '0 10px 40px rgba(0,0,0,0.8)',
+              }}
+            >
+              Руны светятся...
+            </p>
+          </div>
+        )}
+      </div>
     </div>
   );
 }
